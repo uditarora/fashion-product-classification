@@ -21,6 +21,9 @@ We start with training the model on the first part of the data, and then fine-tu
 - One of the images (`25480.jpg`) is loaded as grayscale by default. Had to convert that to RGB in the dataset loader.
 - Initial experiments on the first part of the data suggest that the model is able to learn fairly quickly, giving ~94% validation accuracy after training for 9 epochs.
 
+## Results
+See [RESULTS.md](RESULTS.md).
+
 ## TODO:
 - Evaluate model on test data.
 - Train on second part of data.
