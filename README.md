@@ -19,14 +19,17 @@ We start with training the model on the first part of the data, and then fine-tu
 - There are 5 images in the small dataset which are referred to in the metadata but don't exist in the dataset.
 - One class from the top-20 is missing in the train-split, and many classes from the remaining classes are absent in either the test of the train splits. Conversion of class names to numerical labels needs to be done carefully.
 - One of the images (`25480.jpg`) is loaded as grayscale by default. Had to convert that to RGB in the dataset loader.
-- Initial experiments on the first part of the data suggest that the model is able to learn fairly quickly, giving ~94% validation accuracy after training for 9 epochs.
+- Initial experiments on the first part of the data suggest that the model is able to learn fairly quickly.
+- Trained on both sets of data - the accuracy for fine-tune part is much lower.
+- Calculated class-wise and average accuracy on test set and added to results.
 
 ## Results
 See [RESULTS.md](RESULTS.md).
 
 ## TODO:
-- Evaluate model on test data.
-- Train on second part of data.
+- ~~Evaluate model on test data.~~
+- ~~Train on second part of data.~~
+- Restructure code into python files
 - Train on the bigger version of dataset.
 - Play with augmentation, hyperparameters, and potentially model architecture to improve performance.
 - Improve accuracy of smaller classes.
