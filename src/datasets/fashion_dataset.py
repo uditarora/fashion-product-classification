@@ -3,6 +3,9 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 import os
+import logging
+
+logger = logging.getLogger('fashion')
 
 class FashionDataset(Dataset):
     """
@@ -19,6 +22,7 @@ class FashionDataset(Dataset):
             class_map (dict): dictionary mapping string labels to numeric categories
             data_transforms: pytorch transforms transformations
         """
+        super(FashionDataset, self).__init__()
         self.image_arr = np.asarray(df['image'].values)
         self.label_arr = np.asarray(df['articleType'].values)
         self.to_tensor = transforms.ToTensor()
@@ -40,8 +44,7 @@ class FashionDataset(Dataset):
 
             label = self.class_map[self.label_arr[index]]
         except Exception as e:
-            print("Exception while trying to fetch item at index",index)
-            print("Image =",img_name)
+            logger.error("Exception while trying to fetch image {} at index {}".format(img_name, index))
             raise e
 
         return (img_as_tensor, label)

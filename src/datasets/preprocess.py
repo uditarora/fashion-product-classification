@@ -6,14 +6,19 @@ from sklearn.model_selection import train_test_split
 
 class Preprocessor:
     """
-    Handles preprocessing of the dataset
+    Handles preprocessing of the dataset:
+        - Cleans the csv file
+        - Splits data into test and train split
+        - Subsplits the data based on top-20 classes and rest
     """
-    def __init__(self, base_path="myntradataset"):
+    def __init__(self, base_path="myntradataset", process=True):
         self.base_path = base_path
         self.old_csv_path = os.path.join(base_path, "styles.csv")
         self.csv_path = os.path.join(base_path, "styles_fixed.csv")
         self.img_path = os.path.join(base_path, "images")
-    
+        if process:
+            self.preprocess()
+
     def clean_csv(self):
         """
         Fixing bad lines in csv file (due to commas in product names)
@@ -28,7 +33,7 @@ class Preprocessor:
                 else:
                     save_row = row
                 csv_writer.writerow(save_row)
-    
+
     def get_df(self):
         """
         Returns a pandas DataFrame containing processed metadata
@@ -36,6 +41,7 @@ class Preprocessor:
         # Read the csv and add a column for image
         styles = pd.read_csv(self.csv_path)
         styles['image'] = styles.apply(lambda row: str(row['id']) + ".jpg", axis=1)
+
         # Filer out rows for which images don't exist
         img_exists = styles.apply(lambda row: os.path.exists(os.path.join(self.img_path, row['image'])), axis=1)
         self.styles = styles[img_exists]

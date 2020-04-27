@@ -19,13 +19,10 @@ test_transforms = [
 
 val_transforms = test_transforms
 
-def get_data_transforms(phases=['train', 'val', 'test']):
-    data_transforms = {}
-    for phase in phases:
-        if phase == 'train':
-            data_transforms[phase] = transforms.Compose(train_transforms)
-        elif phase == 'val':
-            data_transforms[phase] = transforms.Compose(val_transforms)
-        else:
-            data_transforms[phase] = transforms.Compose(test_transforms)
-    return data_transforms
+def get_data_transforms(phase):
+    if phase == 'train':
+        return transforms.Compose(train_transforms)
+    elif phase == 'val':
+        return transforms.Compose(val_transforms)
+    else:
+        return transforms.Compose(test_transforms)
