@@ -34,6 +34,10 @@ See [RESULTS.md](RESULTS.md).
 - Play with augmentation, hyperparameters, and potentially model architecture to improve performance.
 - Improve accuracy of smaller classes.
 
+## Ideas:
+- Use some field from metadata and build a multitask learning based classifier for both the product category as well as some metadata field.
+- Combine image features and text features using a fusion network.
+
 ## Files
 - `preprocess_small.ipynb` contains code for preprocessing the small version dataset.
 - `fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
