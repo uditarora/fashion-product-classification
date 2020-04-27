@@ -29,19 +29,21 @@ class TestPreprocessor(unittest.TestCase):
         map2 = self.preprocessor.classmap_top20
         self.assertEqual(len(set(map1.keys()).intersection(set(map2.keys()))),
             0, "Invalid class division in subsplit - overlap found")
-        
-        top20, ft = 0, 0
-        for phase in ['train']:
-            top20 += len(self.preprocessor.data_top20_map[phase]['articleType'].unique())
-            ft += len(self.preprocessor.data_ft_map[phase]['articleType'].unique())
+
+        top20_set, ft_set = set(), set()
+        for phase in ['train', 'val']:
+            top20_set = top20_set.union(set(self.preprocessor.data_top20_map[phase]['articleType'].unique()))
+            ft_set = ft_set.union(set(self.preprocessor.data_ft_map[phase]['articleType'].unique()))
+
+        top20 = len(top20_set)
+        ft = len(ft_set)
         total = len(self.preprocessor.full_train['articleType'].unique())
         self.assertEqual(top20+ft, total,
             "Invalid class division in subsplit of train/val - missing classes")
 
-        top20, ft = 0, 0
-        for phase in ['test']:
-            top20 += len(self.preprocessor.data_top20_map[phase]['articleType'].unique())
-            ft += len(self.preprocessor.data_ft_map[phase]['articleType'].unique())
+        phase = 'test'
+        top20 = len(self.preprocessor.data_top20_map[phase]['articleType'].unique())
+        ft = len(self.preprocessor.data_ft_map[phase]['articleType'].unique())
         total = len(self.preprocessor.full_test['articleType'].unique())
         self.assertEqual(top20+ft, total,
             "Invalid class division in subsplit of test - missing classes")
