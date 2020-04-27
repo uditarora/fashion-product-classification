@@ -41,7 +41,9 @@ See [RESULTS.md](RESULTS.md).
 ## Files
 ### Source code
 - `src/datasets/` contains code for preprocessing and loading the dataset
+- `src/models` contains the code for creating and fetching models
 - `src/tests/` cotains testing code
+- `train.py` contians the Trainer class and test training code
 ### Experiments
 - `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
 - `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
