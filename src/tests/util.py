@@ -1,0 +1,1 @@
+PATH = '/Users/udit/code/im/data/fashion-product-images-small/myntradataset'

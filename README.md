@@ -39,8 +39,15 @@ See [RESULTS.md](RESULTS.md).
 - Combine image features and text features using a fusion network.
 
 ## Files
-- `preprocess_small.ipynb` contains code for preprocessing the small version dataset.
-- `fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
+### Source code
+- `src/datasets/` contains code for preprocessing and loading the dataset
+- `src/tests/` cotains testing code
+### Experiments
+- `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
+- `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
 
 ## How to run
+#### Tests
+Update path in `src/tests/util.py` and run `python -m unittest discover` from the root directory.
+#### Experiments
 - Open `fashion_classification_small.ipynb` using jupyter and execute the cells.

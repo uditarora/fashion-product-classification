@@ -1,14 +1,20 @@
 import unittest
 import pandas as pd
-from src.datasets.preprocess_small import Preprocessor
+from src.datasets.preprocess import Preprocessor
+from .util import *
 
 class TestPreprocessor(unittest.TestCase):
+    """
+    Tests the dataset preprocessor
+    """
     def setUp(self):
-        path = '/Users/udit/code/im/data/fashion-product-images-small/myntradataset'
-        self.preprocessor = Preprocessor(base_path=path)
+        self.preprocessor = Preprocessor(base_path=PATH)
         self.preprocessor.preprocess()
     
     def test_verify_csv(self):
+        """
+        Check if the csv file has been cleaned
+        """
         try:
             self.preprocessor.clean_csv()
             styles = pd.read_csv(self.preprocessor.csv_path)
@@ -18,12 +24,18 @@ class TestPreprocessor(unittest.TestCase):
             self.assertIsNotNone(styles, "unable to load csv file")
     
     def test_verify_test_train_split(self):
+        """
+        Check if the data has been split into train-test properly
+        """
         num_train = len(self.preprocessor.full_train)
         num_test = len(self.preprocessor.full_test)
         total = len(self.preprocessor.styles)
         self.assertEqual(num_test+num_train, total, "Invalid train-test split")
     
     def test_verify_subsplit(self):
+        """
+        Check if the data has been subsplit as per top-20 classes properly
+        """
         # Check if there is any intersection between top-20 and remaining values
         map1 = self.preprocessor.classmap_ft
         map2 = self.preprocessor.classmap_top20
