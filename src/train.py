@@ -50,6 +50,7 @@ class Trainer:
         self.epochs = 0
         self.save_ckpt_flag = save_ckpt_flag
         self.ckpt_path = ckpt_path
+        self.best_model_wts = copy.deepcopy(self.model.state_dict())
 
         # Load previous checkpoint if it exists
         if load_ckpt_flag and ckpt_path and os.path.exists(ckpt_path):
@@ -61,9 +62,7 @@ class Trainer:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
-        self.model.to(device)
 
-        self.best_model_wts = copy.deepcopy(model.state_dict())
         self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
 
     def load_model(self, ckpt_path, load_optim=True):
@@ -72,6 +71,7 @@ class Trainer:
         """
         checkpoint = torch.load(ckpt_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.best_model_wts = copy.deepcopy(self.model.state_dict())
         if load_optim:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']

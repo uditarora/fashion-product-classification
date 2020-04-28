@@ -1,8 +1,11 @@
 import csv
+import logging
 import numpy as np
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
+
+logger = logging.getLogger('fashion')
 
 class Preprocessor:
     """
@@ -121,7 +124,11 @@ class Preprocessor:
         """
         Perform preprocessing sequentially
         """
+        logger.info("Cleaning csv")
         self.clean_csv()
+        logger.info("Reading clean csv into df")
         self.get_df()
+        logger.info("Splitting into test-train")
         self.test_train_split()
+        logger.info("Sub-splitting based on top-20 classes")
         self.subsplit()
