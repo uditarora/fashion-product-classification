@@ -12,12 +12,12 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 
-from datasets.fashion_dataset import FashionDataset
-from datasets.preprocess import Preprocessor
-from datasets.fashion_transforms import get_data_transforms
-from datasets.util import get_class_weights
-from models.fashion_classifier import get_top20_classifier, get_ft_classifier
-from tests.util import PATH
+from src.datasets.fashion_dataset import FashionDataset
+from src.datasets.preprocess import Preprocessor
+from src.datasets.fashion_transforms import get_data_transforms
+from src.datasets.util import get_class_weights
+from src.models.fashion_classifier import get_top20_classifier, get_ft_classifier
+from src.tests.util import PATH
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('fashion')
@@ -147,8 +147,8 @@ class Trainer:
         ax.legend()
         plt.show()
 
-def train(ckpt_path=None):
-    processor = Preprocessor(PATH)
+def setup_top20(ckpt_path=None, DATA_PATH=PATH, batch_size=64):
+    processor = Preprocessor(DATA_PATH)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     datasets_top20 = {x: FashionDataset(processor.data_top20_map[x],
                                         processor.img_path,
@@ -158,7 +158,7 @@ def train(ckpt_path=None):
     for name, dataset in datasets_top20.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
-    dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=64,
+    dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
                                        shuffle=False, num_workers=1)
                         for x in processor.data_top20_map.keys()}
 
@@ -175,7 +175,39 @@ def train(ckpt_path=None):
     trainer = Trainer(model, criterion, optimizer, dataloaders_top20,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
     
-    trainer.train(1)
+    return trainer, dataloaders_top20
+
+def setup_ft(ckpt_path=None, DATA_PATH=PATH, batch_size=64, model=None):
+    processor = Preprocessor(DATA_PATH)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    datasets_ft = {x: FashionDataset(processor.data_ft_map[x],
+                                        processor.img_path,
+                                        processor.classmap_ft,
+                                        get_data_transforms(x)) 
+                     for x in processor.data_ft_map.keys()}
+    for name, dataset in datasets_ft.items():
+        logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
+
+    dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
+                                       shuffle=False, num_workers=1)
+                        for x in processor.data_ft_map.keys()}
+
+    model = get_ft_classifier(model)
+    weights_ft = get_class_weights(processor.data_ft_map['train'],
+                                      processor.classmap_ft)
+    
+    criterion = nn.CrossEntropyLoss(weight=torch.Tensor(weights_ft).to(device))
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    # Decay LR by a factor of 0.1 every 5 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+
+    trainer = Trainer(model, criterion, optimizer, dataloaders_ft,
+                      scheduler=scheduler, ckpt_path=ckpt_path, device=device)
+    
+    return trainer, dataloaders_ft
+
 
 if __name__ == '__main__':
-    train()
+    trainer_top20, dataloaders_top20 = setup_top20(ckpt_path=None)
+    trainer_top20.train(1)

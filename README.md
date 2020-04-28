@@ -29,7 +29,7 @@ See [RESULTS.md](RESULTS.md).
 ## TODO:
 - ~~Evaluate model on test data.~~
 - ~~Train on second part of data.~~
-- Restructure code into python files
+- ~~Restructure code into python files.~~
 - Train on the bigger version of dataset.
 - Play with augmentation, hyperparameters, and potentially model architecture to improve performance.
 - Improve accuracy of smaller classes.
