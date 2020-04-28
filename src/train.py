@@ -48,10 +48,6 @@ class Trainer:
         self.data_loaders = data_loaders
         self.scheduler = scheduler
         self.epochs = 0
-        if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
         self.save_ckpt_flag = save_ckpt_flag
         self.ckpt_path = ckpt_path
 
@@ -60,6 +56,12 @@ class Trainer:
             self.load_model(ckpt_path, load_optim)
         else:
             self.best_acc = 0.0
+
+        if device is None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+        self.model.to(device)
 
         self.best_model_wts = copy.deepcopy(model.state_dict())
         self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
@@ -210,7 +212,6 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
     if processor is None:
         logger.info("Preprocessing data")
         processor = Preprocessor(data_path)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Creating datasets")
     datasets_top20 = {x: FashionDataset(processor.data_top20_map[x],
                                         processor.img_path,
@@ -227,6 +228,8 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
 
     logger.info("Creating model")
     model = get_top20_classifier()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
 
@@ -249,7 +252,6 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
     if processor is None:
         logger.info("Preprocessing data")
         processor = Preprocessor(data_path)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Creating datasets")
     datasets_ft = {x: FashionDataset(processor.data_ft_map[x],
                                         processor.img_path,
@@ -266,6 +268,8 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
 
     logger.info("Creating model")
     model = get_ft_classifier(model)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
     weights_ft = get_class_weights(processor.data_ft_map['train'],
                                       processor.classmap_ft)
     
