@@ -51,3 +51,9 @@ class FashionDataset(Dataset):
 
     def __len__(self):
         return len(self.image_arr)
+    
+    def get_inv_classmap(self):
+        """
+        Returns a dictionary mapping class numbers to names
+        """
+        return {v: k for k, v in self.class_map.items()}

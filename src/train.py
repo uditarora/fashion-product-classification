@@ -7,8 +7,8 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from collections import defaultdict
-# from tqdm.notebook import tqdm
-from tqdm import tqdm
+from tqdm.notebook import tqdm
+# from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 
@@ -17,12 +17,28 @@ from src.datasets.preprocess import Preprocessor
 from src.datasets.fashion_transforms import get_data_transforms
 from src.datasets.util import get_class_weights
 from src.models.fashion_classifier import get_top20_classifier, get_ft_classifier
+from src.models.eval import *
 from src.tests.util import PATH
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('fashion')
 
 class Trainer:
+    """
+    Handles loading, saving, training and evaluation of models
+
+    Args:
+        model: The model to be trained
+        criterion: The loss function
+        optimizer: The optimizer used for training
+        data_loaders (dict): Dictionary containing dataloaders for train, val and test
+        scheduler (optional): Learning rate scheduler
+        load_ckpt_flag (default=True): If True, loads the previous checkpoint if available
+        save_ckpt_flag (default=True): If True, saves the best model found so far
+        ckpt_path (optional): Checkpoint load/save path
+        load_optim (defaul=True): If True, loads the optimizer state from checkpoint
+        device (optional): Torch device
+    """
     def __init__(self, model, criterion, optimizer, data_loaders,
                  scheduler=None, load_ckpt_flag=True, save_ckpt_flag=True,
                  ckpt_path=None, load_optim=True, device=None):
@@ -49,6 +65,9 @@ class Trainer:
         self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
 
     def load_model(self, ckpt_path, load_optim=True):
+        """
+        Load the model and optimizer from checkpoint
+        """
         checkpoint = torch.load(ckpt_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         if load_optim:
@@ -61,21 +80,35 @@ class Trainer:
             .format(epoch+1, loss, self.best_acc))
 
     def get_best_model(self):
+        """
+        Returns the best model found by the trainer so far
+        """
         self.model.load_state_dict(self.best_model_wts)
         return self.model
 
     def save_model(self, epoch_loss, epoch_acc):
-        # Save checkpont file
+        """
+        Save checkpont to file
+        """
         logger.info('--Saving checkpoint--')
-        torch.save({
-            'epoch': self.epochs,
-            'model_state_dict': self.best_model_wts,
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            'loss': epoch_loss,
-            'acc': epoch_acc
-        }, self.ckpt_path)
+        try:
+            torch.save({
+                'epoch': self.epochs,
+                'model_state_dict': self.best_model_wts,
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'loss': epoch_loss,
+                'acc': epoch_acc
+            }, self.ckpt_path)
+        except Exception as e:
+            logger.error("Unable to save checkpoint: {}".format(e))
 
     def run_epoch(self, do_val=True):
+        """
+        Run one epoch on the dataset
+
+        Args:
+            - do_val (default=True): If True, runs validation as well
+        """
         if do_val:
             phases = ['train', 'val']
         else:
@@ -126,6 +159,9 @@ class Trainer:
         self.epochs += 1
     
     def train(self, num_epochs):
+        """
+        Train the model on given number of epochs
+        """
         since = time.time()
         for epoch in range(num_epochs):
             logger.info("Running epoch {}/{}".format(epoch, num_epochs-1))
@@ -138,6 +174,9 @@ class Trainer:
         logger.info("Best val Acc: {:4f}".format(self.best_acc))
 
     def plot_perf(self, metric='loss'):
+        """
+        Plot the training and validation performance observed so far
+        """
         _, ax = plt.subplots(figsize = (8,6))
         ax.grid()
         ax.set_title("Model performance over epochs - {}".format(metric))
@@ -146,9 +185,29 @@ class Trainer:
         ax.plot(self.history['val'][metric], label="Validation {}".format(metric))
         ax.legend()
         plt.show()
+    
+    def get_test_accuracy(self, as_df=True):
+        """
+        Evaluates the model on the test set and returns average and class-wise
+        accuracy.
 
-def setup_top20(ckpt_path=None, DATA_PATH=PATH, batch_size=64):
-    processor = Preprocessor(DATA_PATH)
+        Args:
+            as_df (default=True): If True, returns accuracies in a pd.DataFrame
+        """
+        avg_acc, class_acc = get_accuracy(self.model,
+            self.data_loaders['test'], device=self.device)
+        if as_df:
+            inv_classmap = self.data_loaders['test'].dataset.get_inv_classmap()
+            return generate_acc_df(avg_acc, class_acc, inv_classmap)
+        else:
+            return avg_acc, class_acc
+
+
+def setup_top20(ckpt_path=None, data_path=PATH, batch_size=64):
+    """
+    Setup training for the top-20 classes (initial train set)
+    """
+    processor = Preprocessor(data_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     datasets_top20 = {x: FashionDataset(processor.data_top20_map[x],
                                         processor.img_path,
@@ -165,7 +224,7 @@ def setup_top20(ckpt_path=None, DATA_PATH=PATH, batch_size=64):
     model = get_top20_classifier()
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
-    
+
     criterion = nn.CrossEntropyLoss(weight=torch.Tensor(weights_top20).to(device))
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
@@ -174,11 +233,14 @@ def setup_top20(ckpt_path=None, DATA_PATH=PATH, batch_size=64):
 
     trainer = Trainer(model, criterion, optimizer, dataloaders_top20,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
-    
+
     return trainer, dataloaders_top20
 
-def setup_ft(ckpt_path=None, DATA_PATH=PATH, batch_size=64, model=None):
-    processor = Preprocessor(DATA_PATH)
+def setup_ft(ckpt_path=None, data_path=PATH, batch_size=64, model=None):
+    """
+    Setup training for the remaining classes (fine-tune set)
+    """
+    processor = Preprocessor(data_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     datasets_ft = {x: FashionDataset(processor.data_ft_map[x],
                                         processor.img_path,
@@ -206,8 +268,3 @@ def setup_ft(ckpt_path=None, DATA_PATH=PATH, batch_size=64, model=None):
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
     
     return trainer, dataloaders_ft
-
-
-if __name__ == '__main__':
-    trainer_top20, dataloaders_top20 = setup_top20(ckpt_path=None)
-    trainer_top20.train(1)
