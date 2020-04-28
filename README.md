@@ -17,7 +17,7 @@ We start with training the model on the first part of the data, and then fine-tu
 ## Observations
 - SGD with momentum optimizer seems to learn faster than Adam optimizer and achieved a better validation accuracy in just 15 epochs than Adam did in over 50 epochs on the top-20 classes. Hence SGD was used for all further experiments.
 - The accuracy of most classes for which there was no training data in the subsplit is 0.
-- The images in the dataset seem to have the product in the center and there is low amount of empty space. Based on this observation, the data augmentaion strategy was changed to using a crop scale between (0.5, 1) while applying data augmenation and it improved the average Top-1 test accuracy by **4.52%** and average Top-5 accuracy by **0.35%** (for small dataset).
+- The images in the dataset seem to have the product in the center and there is low amount of empty space. Based on this observation, the data augmentaion strategy was changed to using a crop scale between (0.5, 1) while applying data augmenation. On the small dataset - This improved the average Top-1 test accuracy by **4.52%** and average Top-5 accuracy by **0.35%** for the top-20 classes. For the fine-tune subsplit, the accuracies went up by **0.79%** and **0.05%**.
 
 ## Updates
 ### Small dataset
