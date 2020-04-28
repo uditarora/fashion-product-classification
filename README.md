@@ -18,6 +18,7 @@ We start with training the model on the first part of the data, and then fine-tu
 - SGD with momentum optimizer seems to learn faster than Adam optimizer and achieved a better validation accuracy in just 15 epochs than Adam did in over 50 epochs on the top-20 classes. Hence SGD was used for all further experiments.
 - The accuracy of most classes for which there was no training data in the subsplit is 0.
 - The images in the dataset seem to have the product in the center and there is low amount of empty space. Based on this observation, the data augmentaion strategy was changed to using a crop scale between (0.5, 1) while applying data augmenation. On the small dataset - This improved the average Top-1 test accuracy by **4.52%** and average Top-5 accuracy by **0.35%** for the top-20 classes. For the fine-tune subsplit, the accuracies went up by **0.79%** and **0.05%**.
+- Training a simple Naive Bayes classifier on the product display name achieves test accuracy of 85.23% on top-20 subsplit and 42.55% on the fine-tune subsplit. This performance is suprisingly close to the performance of the CNN trained on the images.
 
 ## Updates
 ### Small dataset
@@ -54,6 +55,7 @@ See [RESULTS.md](RESULTS.md).
 - `train.py` contians the Trainer class and test training code
 ### Experiments
 - `fashion_classification_small.ipynb` contains code used to obtain the latest results on small dataset.
+- `experiments/metadata_experiments.ipynb` contains code used to evaluate metadata.
 - `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
 - `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
 
@@ -65,5 +67,3 @@ $ python main.py --data <path_to_dataset> --ckpt <path_to_checkpoint_folder>
 
 #### Tests
 Update path in `src/tests/util.py` and run `python -m unittest discover` from the root directory.
-#### Experiments
-- Open `fashion_classification_small.ipynb` using jupyter and execute the cells.
