@@ -203,12 +203,15 @@ class Trainer:
             return avg_acc, class_acc
 
 
-def setup_top20(ckpt_path=None, data_path=PATH, batch_size=64):
+def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
     """
     Setup training for the top-20 classes (initial train set)
     """
-    processor = Preprocessor(data_path)
+    if processor is None:
+        logger.info("Preprocessing data")
+        processor = Preprocessor(data_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info("Creating datasets")
     datasets_top20 = {x: FashionDataset(processor.data_top20_map[x],
                                         processor.img_path,
                                         processor.classmap_top20,
@@ -217,10 +220,12 @@ def setup_top20(ckpt_path=None, data_path=PATH, batch_size=64):
     for name, dataset in datasets_top20.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
+    logger.info("Creating dataloaders")
     dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
                                        shuffle=False, num_workers=1)
                         for x in processor.data_top20_map.keys()}
 
+    logger.info("Creating model")
     model = get_top20_classifier()
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
@@ -231,17 +236,21 @@ def setup_top20(ckpt_path=None, data_path=PATH, batch_size=64):
     # Decay LR by a factor of 0.1 every 5 epochs
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
+    logger.info("Creating trainer")
     trainer = Trainer(model, criterion, optimizer, dataloaders_top20,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
 
-    return trainer, dataloaders_top20
+    return processor, trainer, dataloaders_top20
 
-def setup_ft(ckpt_path=None, data_path=PATH, batch_size=64, model=None):
+def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, model=None):
     """
     Setup training for the remaining classes (fine-tune set)
     """
-    processor = Preprocessor(data_path)
+    if processor is None:
+        logger.info("Preprocessing data")
+        processor = Preprocessor(data_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info("Creating datasets")
     datasets_ft = {x: FashionDataset(processor.data_ft_map[x],
                                         processor.img_path,
                                         processor.classmap_ft,
@@ -250,10 +259,12 @@ def setup_ft(ckpt_path=None, data_path=PATH, batch_size=64, model=None):
     for name, dataset in datasets_ft.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
+    logger.info("Creating dataloaders")
     dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
                                        shuffle=False, num_workers=1)
                         for x in processor.data_ft_map.keys()}
 
+    logger.info("Creating model")
     model = get_ft_classifier(model)
     weights_ft = get_class_weights(processor.data_ft_map['train'],
                                       processor.classmap_ft)
@@ -264,7 +275,8 @@ def setup_ft(ckpt_path=None, data_path=PATH, batch_size=64, model=None):
     # Decay LR by a factor of 0.1 every 5 epochs
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
+    logger.info("Creating trainer")
     trainer = Trainer(model, criterion, optimizer, dataloaders_ft,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
     
-    return trainer, dataloaders_ft
+    return processor, trainer, dataloaders_ft
