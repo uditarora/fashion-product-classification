@@ -119,6 +119,15 @@ class Preprocessor:
         }
 
         return self.data_top20_map, self.data_ft_map
+    
+    def get_bottom_train(self, num=50):
+        """
+        Filter the lowest (num) classes in the fine-tune subsplit
+        """
+        bottom_articleType = self.data_ft_map['train'].groupby('articleType').size().sort_values(ascending=False).tail(num).reset_index()
+        filter_bottom = self.data_ft_map['train']['articleType'].isin(bottom_articleType['articleType'])
+        train_bottom_data = self.data_ft_map['train'][filter_bottom]
+        return train_bottom_data
 
     def preprocess(self):
         """

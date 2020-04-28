@@ -1,3 +1,4 @@
+import Augmentor
 from torchvision import transforms
 
 # Data augmentation and normalization for training and fine-tuning
@@ -19,9 +20,25 @@ test_transforms = [
 
 val_transforms = test_transforms
 
-def get_data_transforms(phase):
+p = Augmentor.Pipeline()
+p.rotate(probability=0.6, max_left_rotation=10, max_right_rotation=10)
+p.flip_left_right(probability=0.5)
+p.zoom(probability=0.4, min_factor=1, max_factor=1.2)
+p.shear(probability=0.8, max_shear_left=10, max_shear_right=10)
+p.skew(probability=0.8)
+
+train_small_transforms = [
+    p.torch_transform(),
+    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+    transforms.ToTensor()
+]
+
+def get_data_transforms(phase, small=False):
     if phase == 'train':
-        return transforms.Compose(train_transforms)
+        if small:
+            return transforms.Compose(train_small_transforms)
+        else:
+            return transforms.Compose(train_transforms)
     elif phase == 'val':
         return transforms.Compose(val_transforms)
     else:

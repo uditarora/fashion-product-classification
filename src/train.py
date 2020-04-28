@@ -64,6 +64,13 @@ class Trainer:
             self.device = device
 
         self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
+    
+    def reset(self):
+        """
+        Resets the trainer - epochs and history
+        """
+        self.epochs = 0
+        self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
 
     def load_model(self, ckpt_path, load_optim=True):
         """
@@ -225,7 +232,7 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
 
     logger.info("Creating dataloaders")
     dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
-                                       shuffle=False, num_workers=1)
+                                       shuffle=True, num_workers=4)
                         for x in processor.data_top20_map.keys()}
 
     logger.info("Creating model")
@@ -265,7 +272,7 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
 
     logger.info("Creating dataloaders")
     dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
-                                       shuffle=False, num_workers=1)
+                                       shuffle=True, num_workers=4)
                         for x in processor.data_ft_map.keys()}
 
     logger.info("Creating model")
@@ -286,3 +293,17 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device)
     
     return processor, trainer, dataloaders_ft
+
+def setup_bottom(processor, trainer, num=50, batch_size=64):
+    logger.info("Filtering data for bottom 50 classes")
+    train_bottom_data = processor.get_bottom_train(num=num)
+    logger.info("Creating dataset and dataloader")
+    dataset = FashionDataset(train_bottom_data, processor.img_path,
+                             processor.classmap_ft,
+                             get_data_transforms('train', small=True))
+    dataloader = DataLoader(dataset, batch_size=batch_size,
+                            shuffle=True, num_workers=4)
+
+    trainer.reset()
+    trainer.data_loaders['train'] = dataloader
+    return trainer
