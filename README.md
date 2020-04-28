@@ -53,10 +53,16 @@ See [RESULTS.md](RESULTS.md).
 - `src/tests/` cotains testing code
 - `train.py` contians the Trainer class and test training code
 ### Experiments
+- `fashion_classification_small.ipynb` contains code used to obtain the latest results on small dataset.
 - `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
 - `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
 
 ## How to run
+Install the requirements in `requirements.txt` and run:
+```bash
+$ python main.py --data <path_to_dataset> --ckpt <path_to_checkpoint_folder>
+```
+
 #### Tests
 Update path in `src/tests/util.py` and run `python -m unittest discover` from the root directory.
 #### Experiments
