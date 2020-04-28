@@ -14,6 +14,11 @@ First, the dataset is divided into train and test splits by using the year from 
 
 We start with training the model on the first part of the data, and then fine-tune it on the second part.
 
+## Observations
+- SGD with momentum optimizer seems to learn faster than Adam optimizer and achieved a better validation accuracy in just 15 epochs than Adam did in over 50 epochs on the top-20 classes. Hence SGD was used for all further experiments.
+- The accuracy of most classes for which there was no training data in the subsplit is 0.
+- The images in the dataset seem to have the product in the center and there is low amount of empty space. Based on this observation, the data augmentaion strategy was changed to using a crop scale between (0.5, 1) while applying data augmenation and it improved the average Top-1 test accuracy by **4.52%** and average Top-5 accuracy by **0.35%** (for small dataset).
+
 ## Updates
 ### Small dataset
 - There are 5 images in the small dataset which are referred to in the metadata but don't exist in the dataset.
@@ -22,6 +27,9 @@ We start with training the model on the first part of the data, and then fine-tu
 - Initial experiments on the first part of the data suggest that the model is able to learn fairly quickly.
 - Trained on both sets of data - the accuracy for fine-tune part is much lower.
 - Calculated class-wise and average accuracy on test set and added to results.
+- Made the code modular by restructuring into classes.
+- Added unit tests for data processing.
+- Improved test accuracy by updating data augmentation and choice of optimizer.
 
 ## Results
 See [RESULTS.md](RESULTS.md).
@@ -31,7 +39,7 @@ See [RESULTS.md](RESULTS.md).
 - ~~Train on second part of data.~~
 - ~~Restructure code into python files.~~
 - Train on the bigger version of dataset.
-- Play with augmentation, hyperparameters, and potentially model architecture to improve performance.
+- ~~Play with augmentation, hyperparameters, and potentially model architecture to improve performance.~~
 - Improve accuracy of smaller classes.
 
 ## Ideas:
