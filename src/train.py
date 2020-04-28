@@ -174,6 +174,8 @@ class Trainer:
         logger.info("Training complete in {:.0f}m {:.0f}s".format(
         time_since // 60, time_since % 60))
         logger.info("Best val Acc: {:4f}".format(self.best_acc))
+        logger.info("Setting model to the best one found during training")
+        self.model.load_state_dict(self.best_model_wts)
 
     def plot_perf(self, metric='loss'):
         """

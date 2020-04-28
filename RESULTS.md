@@ -10,26 +10,26 @@
 #### Test results
 |                       |   Top-1 |   Top-5 |
 |:----------------------|--------:|--------:|
-| Average (Micro)       |   82.08 |   95.39 |
-| Backpacks             |   92.03 |   99.58 |
+| Average (Micro)       |   86.8  |   95.74 |
+| Backpacks             |   97.9  |  100    |
 | Belts                 |   99.07 |   99.07 |
-| Briefs                |   96.79 |  100    |
-| Casual Shoes          |   73.2  |   99.46 |
-| Flip Flops            |   87.75 |   97.55 |
-| Formal Shoes          |   97.84 |   99.64 |
-| Handbags              |   94.82 |   99.73 |
-| Heels                 |   89.05 |   99.82 |
-| Jeans                 |   98.89 |   98.89 |
-| Kurtas                |   95.6  |  100    |
+| Briefs                |   95.19 |  100    |
+| Casual Shoes          |   80.69 |   99.61 |
+| Flip Flops            |   85.05 |   97.79 |
+| Formal Shoes          |   92.45 |   99.64 |
+| Handbags              |   96.28 |   99.87 |
+| Heels                 |   86.13 |   99.82 |
+| Jeans                 |   99.26 |  100    |
+| Kurtas                |   93.32 |  100    |
 | Perfume and Body Mist |    0    |    0    |
-| Sandals               |   78.33 |   99.76 |
-| Shirts                |   91.04 |   99.38 |
-| Socks                 |   95.58 |  100    |
-| Sports Shoes          |   82.42 |   99.39 |
+| Sandals               |   84.76 |  100    |
+| Shirts                |   97.56 |  100    |
+| Socks                 |   92.82 |  100    |
+| Sports Shoes          |   84.59 |   99.48 |
 | Sunglasses            |  100    |  100    |
-| Tops                  |   79.66 |  100    |
-| Tshirts               |   79.63 |   99.21 |
-| Wallets               |   98.21 |  100    |
+| Tops                  |   69.99 |   99.86 |
+| Tshirts               |   91.81 |   99.91 |
+| Wallets               |   97.62 |  100    |
 | Watches               |  100    |  100    |
 
 ### Fine-tune sub-split
