@@ -22,14 +22,14 @@ Update path in `src/tests/util.py` and run `python -m unittest discover` from th
 - `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
 
 ## Dataset
-The Fashion Product Images Daatset is used here.
+The Fashion Product Images Daatset is used in this repo.
 - Small version: https://www.kaggle.com/paramaggarwal/fashion-product-images-small
 - Full version: https://www.kaggle.com/paramaggarwal/fashion-product-images-dataset/version/1
 
-## Model
+## Experimental Setup
+### Model
 A ResNet50 model with the last fully-connected layer replaced by a new layer corresponding to the number of classes in the dataset. We start with a pre-trained ResNet50 model, and retrain the whole network with the new data.
 
-## Experimental Setup
 First, the dataset is divided into train and test splits by using the year from the metadata. Images belonging to the even year numbers go to the train-split, and the others go to the test-split. This data is further sub-split into two parts - the first part consisting of images corresponding to the top-20 classes (by frequency), and the second part consisting of images corresponding to the rest of the classes.
 
 We start with training the model on the first part of the data, and then fine-tune it on the second part.
@@ -51,6 +51,7 @@ We start with training the model on the first part of the data, and then fine-tu
 - Made the code modular by restructuring into classes.
 - Added unit tests for data processing.
 - Improved test accuracy by updating data augmentation and choice of optimizer.
+- Tried re-training the fine-tune model on the bottom 50 classes with fewer samples by applying more data augmentations. It improved the test accuracy of some classes but led to a decrease in the average test accuracy, possibly due to overfitting on the smaller classes.
 
 ## Results
 See [RESULTS.md](RESULTS.md).
@@ -64,5 +65,12 @@ See [RESULTS.md](RESULTS.md).
 - Improve accuracy of smaller classes.
 
 ## Ideas:
+- Apply offline data augmentation on the smaller classes.
+- Use progressive resizing while training.
 - Use some field from metadata and build a multitask learning based classifier for both the product category as well as some metadata field.
 - Combine image features and text features using a fusion network.
+
+### Testing Ideas:
+- Unit test corresponding to Trainer class that checks trains the model on a small number of epochs and compares the accuracy to the expected accuracy.
+- Regression testing in Trainer class - to ensure that we don't regress performance
+- Output tests: Obtain predictions for a fixed set of images and compare them against expected output.

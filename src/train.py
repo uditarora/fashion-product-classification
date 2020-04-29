@@ -295,7 +295,7 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
     return processor, trainer, dataloaders_ft
 
 def setup_bottom(processor, trainer, num=50, batch_size=64):
-    logger.info("Filtering data for bottom 50 classes")
+    logger.info("Filtering data for bottom {num} classes".format(num))
     train_bottom_data = processor.get_bottom_train(num=num)
     logger.info("Creating dataset and dataloader")
     dataset = FashionDataset(train_bottom_data, processor.img_path,

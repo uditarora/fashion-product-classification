@@ -6,7 +6,7 @@ from src.train import setup_top20, setup_ft, setup_bottom
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('fashion')
 
-def main(data_path, ckpt_path):
+def main(data_path, ckpt_path, train_bottom=False):
     # Train on top-20 classes (train subsplit)
     logger.info("Training on top-20 classes")
     ckpt_path_top20 = os.path.join(ckpt_path, 'best_val_top20.ckpt')
@@ -29,15 +29,16 @@ def main(data_path, ckpt_path):
     print("Test accuracy for fine-tune classes:")
     print(acc_df_ft)
 
-    # Train on bottom 50 classes of fine-tune subsplit
-    # with alternate data augmentations
-    logger.info("Training on bottom 50 classes of fine-tune subsplit")
-    trainer_b50 = setup_bottom(processor, trainer_ft, num=50)
-    trainer_b50.train(20)
+    if train_bottom:
+        # Train on bottom 50 classes of fine-tune subsplit
+        # with alternate data augmentations
+        logger.info("Training on bottom 50 classes of fine-tune subsplit")
+        trainer_b50 = setup_bottom(processor, trainer_ft, num=50)
+        trainer_b50.train(20)
 
-    acc_df_ft2 = trainer_ft.get_test_accuracy()
-    print("Test accuracy for fine-tune data after second round of training:")
-    print(acc_df_ft2)
+        acc_df_ft2 = trainer_ft.get_test_accuracy()
+        print("Test accuracy for fine-tune data after second round of training:")
+        print(acc_df_ft2)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
