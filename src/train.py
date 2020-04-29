@@ -146,14 +146,13 @@ class Trainer:
                 if not self.mt:
                     labels = labels.to(self.device).long()
                 else:
-                    for labels_t in labels:
-                        labels_t.to(self.device).long(),
+                    for i in range(len(labels)):
+                        labels[i] = labels[i].to(self.device).long()
 
                 self.optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     if self.criterion is None:
                         outputs, loss = self.model(inputs, labels)
-                        print("Loss: {}".format(loss))
                     else:
                         # TODO: Add support for multiple criterions
                         outputs = self.model(inputs)
@@ -192,7 +191,7 @@ class Trainer:
             logger.info('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
             if self.mt:
                 epoch_acc2 = current_corrects[1].double() / len(self.data_loaders[phase].dataset)
-                epoch_acc3 = current_corrects[1].double() / len(self.data_loaders[phase].dataset)
+                epoch_acc3 = current_corrects[2].double() / len(self.data_loaders[phase].dataset)
                 logger.info('{} Task2 Acc: {:.4f} Task3 Acc: {:.4f}'.format(phase, epoch_acc2, epoch_acc3))
 
             if phase == 'val' and epoch_acc > self.best_acc:
@@ -241,7 +240,7 @@ class Trainer:
             as_df (default=True): If True, returns accuracies in a pd.DataFrame
         """
         avg_acc, class_acc = get_accuracy(self.model,
-            self.data_loaders['test'], device=self.device)
+            self.data_loaders['test'], device=self.device, mt=self.mt)
         if as_df:
             inv_classmap = self.data_loaders['test'].dataset.get_inv_classmap()
             return generate_acc_df(avg_acc, class_acc, inv_classmap)
@@ -264,8 +263,8 @@ def get_dataset(processor, phase, subsplit='top20', mt=False):
             get_data_transforms(phase),
             mastercat_map, subcat_map)
     else:
-        return FashionDataset(processor.data_top20_map[phase],
-            processor.img_path, processor.classmap_top20,
+        return FashionDataset(processor.data_ft_map[phase],
+            processor.img_path, processor.classmap_ft,
             get_data_transforms(phase),
             mastercat_map, subcat_map)
 

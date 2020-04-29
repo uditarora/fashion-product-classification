@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from tqdm.notebook import tqdm
 
-def get_accuracy(model, dataloader, topk=(1,5), device=None):
+def get_accuracy(model, dataloader, topk=(1,5), device=None, mt=False):
     """
     Computes the class-wise and average (micro) accuracy@k
     for the specified values of k
@@ -27,8 +27,12 @@ def get_accuracy(model, dataloader, topk=(1,5), device=None):
     with torch.no_grad():
         for images, labels in tqdm(dataloader):
             images = images.to(device)
+            if mt:
+                labels = labels[0]
             labels = labels.to(device).long()
             outputs = model(images)
+            if mt:
+                outputs = outputs[0]
             _, pred = torch.topk(outputs, maxk, 1)
             pred = pred.t()
             correct = pred.eq(labels.view(1, -1).expand_as(pred))

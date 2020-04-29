@@ -69,7 +69,7 @@ class FashionClassifierMT(nn.Module):
             self.resnet = models.resnet50(pretrained=True)
             num_features = self.resnet.fc.in_features
         self.resnet.fc = Identity()
-        self.fc1 = nn.Linear(num_features, num_classes)
+        self.fc = nn.Linear(num_features, num_classes)
         self.fc2 = nn.Linear(num_features, 7)
         self.fc3 = nn.Linear(num_features, 45)
 
@@ -82,14 +82,14 @@ class FashionClassifierMT(nn.Module):
         and loss (if ys is provided)
         """
         x = self.resnet(x)
-        x1 = self.fc1(x)
+        x1 = self.fc(x)
         x2 = self.fc2(x)
         x3 = self.fc3(x)
 
         if ys is not None:
-            loss = self.criterion1(x1, ys[0])
-            loss += self.criterion2(x2, ys[1])
-            loss += self.criterion2(x3, ys[2])
+            loss = 2*self.criterion1(x1, ys[0])
+            loss += self.criterion2(x2, ys[1])/2
+            loss += self.criterion2(x3, ys[2])/2
             return (x1, x2, x3), loss
         else:
             return (x1, x2, x3)
