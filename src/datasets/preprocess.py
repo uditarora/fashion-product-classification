@@ -119,10 +119,19 @@ class Preprocessor:
         }
 
         return self.data_top20_map, self.data_ft_map
-    
+
+    def map_categories(self):
+        """
+        Obtain dictionary maps for masterCategory and subCategory
+        """
+        master = self.styles['masterCategory'].unique()
+        sub = self.styles['subCategory'].unique()
+        self.mastercat_map = dict(zip(master, range(len(master))))
+        self.subcat_map = dict(zip(sub, range(len(sub))))
+
     def get_bottom_train(self, num=50):
         """
-        Filter the lowest (num) classes in the fine-tune subsplit
+        Filter the lowest (num) classes in the fine-tune train subsplit
         """
         bottom_articleType = self.data_ft_map['train'].groupby('articleType').size().sort_values(ascending=False).tail(num).reset_index()
         filter_bottom = self.data_ft_map['train']['articleType'].isin(bottom_articleType['articleType'])
@@ -141,3 +150,5 @@ class Preprocessor:
         self.test_train_split()
         logger.info("Sub-splitting based on top-20 classes")
         self.subsplit()
+        logger.info("Create maps for categoires")
+        self.map_categories()
