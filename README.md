@@ -40,6 +40,7 @@ We start with training the model on the first part of the data, and then fine-tu
 - The accuracy of most classes for which there was no training data in the subsplit is 0.
 - The images in the dataset seem to have the product in the center and there is low amount of empty space. Based on this observation, the data augmentaion strategy was changed to using a crop scale between (0.5, 1) while applying data augmenation. On the small dataset - This improved the average Top-1 test accuracy by **4.52%** and average Top-5 accuracy by **0.35%** for the top-20 classes. For the fine-tune subsplit, the accuracies went up by **0.79%** and **0.05%**.
 - Training a simple Naive Bayes classifier on the product display name achieves test accuracy of 85.23% on top-20 subsplit and 42.55% on the fine-tune subsplit. This performance is surprisingly close to the performance of the CNN trained on the images.
+- Introducing shuffling in the training data-loaders improved the Top-1 accuracy by **1.13%** and Top-5 accuracy by **0.49%** for the fine-tune subsplit.
 
 ## Updates
 ### Small dataset
@@ -53,6 +54,7 @@ We start with training the model on the first part of the data, and then fine-tu
 - Added unit tests for data processing.
 - Improved test accuracy by updating data augmentation and choice of optimizer.
 - Tried re-training the fine-tune model on the bottom 50 classes with fewer samples by applying more data augmentations. It improved the test accuracy of some classes but led to a decrease in the average test accuracy, possibly due to overfitting on the smaller classes.
+- Improved accuracy by shuffling data during training.
 
 ## Results
 See [RESULTS.md](RESULTS.md).
