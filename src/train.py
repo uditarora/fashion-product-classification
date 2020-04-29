@@ -29,9 +29,9 @@ class Trainer:
 
     Args:
         model: The model to be trained
-        criterion: The loss function
         optimizer: The optimizer used for training
         data_loaders (dict): Dictionary containing dataloaders for train, val and test
+        criterion (optional): If provided, the criterion loss function is used
         scheduler (optional): Learning rate scheduler
         load_ckpt_flag (default=True): If True, loads the previous checkpoint if available
         save_ckpt_flag (default=True): If True, saves the best model found so far
@@ -39,13 +39,13 @@ class Trainer:
         load_optim (defaul=True): If True, loads the optimizer state from checkpoint
         device (optional): Torch device
     """
-    def __init__(self, model, criterion, optimizer, data_loaders,
+    def __init__(self, model, optimizer, data_loaders, criterion=None,
                  scheduler=None, load_ckpt_flag=True, save_ckpt_flag=True,
                  ckpt_path=None, load_optim=True, device=None):
         self.model = model
-        self.criterion = criterion
         self.optimizer = optimizer
         self.data_loaders = data_loaders
+        self.criterion = criterion
         self.scheduler = scheduler
         self.epochs = 0
         self.save_ckpt_flag = save_ckpt_flag
@@ -140,9 +140,12 @@ class Trainer:
 
                 self.optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = self.model(inputs)
+                    if self.criterion:
+                        outputs = self.model(inputs)
+                        loss = self.criterion(outputs, labels)
+                    else:
+                        outputs, loss = self.model(inputs, labels)
                     _, preds = torch.max(outputs, 1)
-                    loss = self.criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()
                         self.optimizer.step()
@@ -214,7 +217,8 @@ class Trainer:
             return avg_acc, class_acc
 
 
-def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
+def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
+                batch_size=64, save_ckpt_flag=True):
     """
     Setup training for the top-20 classes (initial train set)
     """
@@ -236,25 +240,26 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH, batch_size=64):
                         for x in processor.data_top20_map.keys()}
 
     logger.info("Creating model")
-    model = get_top20_classifier()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
+    model = get_top20_classifier(weights_top20)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
 
-    criterion = nn.CrossEntropyLoss(weight=torch.Tensor(weights_top20).to(device))
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     # Decay LR by a factor of 0.1 every 5 epochs
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     logger.info("Creating trainer")
-    trainer = Trainer(model, criterion, optimizer, dataloaders_top20,
-                      scheduler=scheduler, ckpt_path=ckpt_path, device=device)
+    trainer = Trainer(model, optimizer, dataloaders_top20,
+                      scheduler=scheduler, ckpt_path=ckpt_path, device=device,
+                      save_ckpt_flag=save_ckpt_flag)
 
     return processor, trainer, dataloaders_top20
 
-def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, model=None):
+def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
+             model=None, save_ckpt_flag=True):
     """
     Setup training for the remaining classes (fine-tune set)
     """
@@ -276,25 +281,28 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64, mode
                         for x in processor.data_ft_map.keys()}
 
     logger.info("Creating model")
-    model = get_ft_classifier(model)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
     weights_ft = get_class_weights(processor.data_ft_map['train'],
                                       processor.classmap_ft)
-    
-    criterion = nn.CrossEntropyLoss(weight=torch.Tensor(weights_ft).to(device))
+    model = get_ft_classifier(model, weights_ft)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     # Decay LR by a factor of 0.1 every 5 epochs
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     logger.info("Creating trainer")
-    trainer = Trainer(model, criterion, optimizer, dataloaders_ft,
-                      scheduler=scheduler, ckpt_path=ckpt_path, device=device)
+    trainer = Trainer(model, optimizer, dataloaders_ft,
+                      scheduler=scheduler, ckpt_path=ckpt_path, device=device,
+                      save_ckpt_flag=save_ckpt_flag)
     
     return processor, trainer, dataloaders_ft
 
 def setup_bottom(processor, trainer, num=50, batch_size=64):
+    """
+    Setup training for bottom n classes with additional augmentations
+    """
     logger.info("Filtering data for bottom {num} classes".format(num))
     train_bottom_data = processor.get_bottom_train(num=num)
     logger.info("Creating dataset and dataloader")
