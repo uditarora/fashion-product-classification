@@ -17,6 +17,7 @@ Update path in `src/tests/util.py` and run `python -m unittest discover` from th
 - `train.py` contians the Trainer class and test training code
 ### Experiments
 - `fashion_classification_small.ipynb` contains code used to obtain the latest results on small dataset.
+- `visualize.ipynb` contains code to visualize the results of the model.
 - `experiments/metadata_experiments.ipynb` contains code used to evaluate metadata.
 - `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
 - `experiments/fashion_classification_small.ipynb` contains the combined data processing and training code for the small version of the dataset.
