@@ -36,12 +36,13 @@ class Trainer:
         load_ckpt_flag (default=True): If True, loads the previous checkpoint if available
         save_ckpt_flag (default=True): If True, saves the best model found so far
         ckpt_path (optional): Checkpoint load/save path
-        load_optim (defaul=True): If True, loads the optimizer state from checkpoint
+        load_optim (default=True): If True, loads the optimizer state from checkpoint
         device (optional): Torch device
+        mt (defaut=True): If True, trains on the multitask learning model
     """
     def __init__(self, model, optimizer, data_loaders, criterion=None,
                  scheduler=None, load_ckpt_flag=True, save_ckpt_flag=True,
-                 ckpt_path=None, load_optim=True, device=None):
+                 ckpt_path=None, load_optim=True, device=None, mt=True):
         self.model = model
         self.optimizer = optimizer
         self.data_loaders = data_loaders
@@ -62,6 +63,9 @@ class Trainer:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
+
+        self.mt = mt
+        self.num_tasks = 3
 
         self.history = {'train': defaultdict(list), 'val': defaultdict(list)}
     
@@ -130,38 +134,65 @@ class Trainer:
                 self.model.eval()   # Set model to evaluate mode
 
             current_loss = 0.0
-            current_corrects = 0
+            if not self.mt:
+                current_corrects = [0]
+            else:
+                current_corrects = [0 for i in range(self.num_tasks)]
 
             logger.info('Iterating through data for phase: {}'.format(phase))
 
             for inputs, labels in tqdm(self.data_loaders[phase]):
                 inputs = inputs.to(self.device)
-                labels = labels.to(self.device).long()
+                if not self.mt:
+                    labels = labels.to(self.device).long()
+                else:
+                    for i in range(len(labels)):
+                        labels[i] = labels[i].to(self.device).long()
 
                 self.optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
-                    if self.criterion:
+                    if self.criterion is None:
+                        outputs, loss = self.model(inputs, labels)
+                    else:
+                        # TODO: Add support for multiple criterions
                         outputs = self.model(inputs)
                         loss = self.criterion(outputs, labels)
+
+                    # Get predictions for all tasks
+                    def get_preds(outputs):
+                        _, preds = torch.max(outputs, 1)
+                        return preds
+                    if not self.mt:
+                        preds = get_preds(outputs)
                     else:
-                        outputs, loss = self.model(inputs, labels)
-                    _, preds = torch.max(outputs, 1)
+                        preds = [
+                            get_preds(outputs[i]) for i in range(self.num_tasks)
+                        ]
+
                     if phase == 'train':
                         loss.backward()
                         self.optimizer.step()
 
                 current_loss += loss.item() * inputs.size(0)
-                current_corrects += torch.sum(preds == labels.data)
-            
+                if not self.mt:
+                    current_corrects += torch.sum(preds == labels.data)
+                else:
+                    for i in range(self.num_tasks):
+                        current_corrects[i] += torch.sum(preds[i] == labels[i].data)
+
             if phase == 'train' and self.scheduler is not None:
                 self.scheduler.step()
 
             epoch_loss = current_loss / len(self.data_loaders[phase].dataset)
-            epoch_acc = current_corrects.double() / len(self.data_loaders[phase].dataset)
+            epoch_acc = current_corrects[0].double() / len(self.data_loaders[phase].dataset)
             self.history[phase]['loss'].append(epoch_loss)
             self.history[phase]['acc'].append(epoch_acc)
 
             logger.info('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+            if self.mt:
+                epoch_acc2 = current_corrects[1].double() / len(self.data_loaders[phase].dataset)
+                epoch_acc3 = current_corrects[2].double() / len(self.data_loaders[phase].dataset)
+                logger.info('{} Task2 Acc: {:.4f} Task3 Acc: {:.4f}'.format(phase, epoch_acc2, epoch_acc3))
 
             if phase == 'val' and epoch_acc > self.best_acc:
                 self.best_acc = epoch_acc
@@ -209,16 +240,36 @@ class Trainer:
             as_df (default=True): If True, returns accuracies in a pd.DataFrame
         """
         avg_acc, class_acc = get_accuracy(self.model,
-            self.data_loaders['test'], device=self.device)
+            self.data_loaders['test'], device=self.device, mt=self.mt)
         if as_df:
             inv_classmap = self.data_loaders['test'].dataset.get_inv_classmap()
             return generate_acc_df(avg_acc, class_acc, inv_classmap)
         else:
             return avg_acc, class_acc
 
+def get_dataset(processor, phase, subsplit='top20', mt=False):
+    """
+    Returns the dataset object based on phase, subsplit and multitask labels
+    """
+    if mt:
+        mastercat_map = processor.mastercat_map
+        subcat_map = processor.subcat_map
+    else:
+        mastercat_map = None
+        subcat_map = None
+    if subsplit == 'top20':
+        return FashionDataset(processor.data_top20_map[phase],
+            processor.img_path, processor.classmap_top20,
+            get_data_transforms(phase),
+            mastercat_map, subcat_map)
+    else:
+        return FashionDataset(processor.data_ft_map[phase],
+            processor.img_path, processor.classmap_ft,
+            get_data_transforms(phase),
+            mastercat_map, subcat_map)
 
 def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
-                batch_size=64, save_ckpt_flag=True):
+                batch_size=64, save_ckpt_flag=True, mt=True):
     """
     Setup training for the top-20 classes (initial train set)
     """
@@ -226,10 +277,7 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
         logger.info("Preprocessing data")
         processor = Preprocessor(data_path)
     logger.info("Creating datasets")
-    datasets_top20 = {x: FashionDataset(processor.data_top20_map[x],
-                                        processor.img_path,
-                                        processor.classmap_top20,
-                                        get_data_transforms(x)) 
+    datasets_top20 = {x: get_dataset(processor, x, subsplit='top20', mt=mt)
                      for x in processor.data_top20_map.keys()}
     for name, dataset in datasets_top20.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
@@ -242,24 +290,24 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
     logger.info("Creating model")
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
-    model = get_top20_classifier(weights_top20)
+    model = get_top20_classifier(weights_top20, mt=mt)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.1 every 5 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    # Decay LR by a factor of 0.3 every 5 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
 
     logger.info("Creating trainer")
     trainer = Trainer(model, optimizer, dataloaders_top20,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device,
-                      save_ckpt_flag=save_ckpt_flag)
+                      save_ckpt_flag=save_ckpt_flag, mt=mt)
 
     return processor, trainer, dataloaders_top20
 
 def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
-             model=None, save_ckpt_flag=True):
+             model=None, save_ckpt_flag=True, mt=True):
     """
     Setup training for the remaining classes (fine-tune set)
     """
@@ -267,10 +315,7 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
         logger.info("Preprocessing data")
         processor = Preprocessor(data_path)
     logger.info("Creating datasets")
-    datasets_ft = {x: FashionDataset(processor.data_ft_map[x],
-                                        processor.img_path,
-                                        processor.classmap_ft,
-                                        get_data_transforms(x)) 
+    datasets_ft = {x: get_dataset(processor, x, subsplit='ft', mt=mt)
                      for x in processor.data_ft_map.keys()}
     for name, dataset in datasets_ft.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
@@ -283,19 +328,19 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
     logger.info("Creating model")
     weights_ft = get_class_weights(processor.data_ft_map['train'],
                                       processor.classmap_ft)
-    model = get_ft_classifier(model, weights_ft)
+    model = get_ft_classifier(model, weights_ft, mt=mt)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.1 every 5 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    # Decay LR by a factor of 0.3 every 5 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
 
     logger.info("Creating trainer")
     trainer = Trainer(model, optimizer, dataloaders_ft,
                       scheduler=scheduler, ckpt_path=ckpt_path, device=device,
-                      save_ckpt_flag=save_ckpt_flag)
+                      save_ckpt_flag=save_ckpt_flag, mt=mt)
     
     return processor, trainer, dataloaders_ft
 
