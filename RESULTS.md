@@ -8,6 +8,11 @@
 <img src="images/small_top20.png" alt="smll_top20" width="350"/>
 
 #### Test results
+Average Top-1 accuracy: **87.01%**, Top-5 accuracy: **95.76%**.
+
+<details>
+  <summary>Click to view classwise accuracies</summary>
+
 |                       |   Top-1 |   Top-5 |
 |:----------------------|--------:|--------:|
 | Average (Micro)       |   87.01 |   95.76 |
@@ -32,12 +37,18 @@
 | Wallets               |   97.92 |  100    |
 | Watches               |  100    |  100    |
 
+</details>
+
 ### Fine-tune sub-split
 
 #### Training plot
 <img src="images/small_ft.png" alt="smll_ft" width="350"/>
 
 #### Test results
+Average Top-1 accuracy: **42.96%**, Top-5 accuracy: **62.87%**.
+
+<details>
+  <summary>Click to view classwise accuracies</summary>
 
 |                           |   Top-1 |   Top-5 |
 |:--------------------------|--------:|--------:|
@@ -164,3 +175,5 @@
 | Waistcoat                 |   16.67 |  100    |
 | Water Bottle              |  100    |  100    |
 | Wristbands                |   25    |  100    |
+
+</details>
