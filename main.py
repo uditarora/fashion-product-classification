@@ -6,13 +6,13 @@ from src.train import setup_top20, setup_ft, setup_bottom
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('fashion')
 
-def main(data_path, ckpt_path, train_bottom=False):
+def main(data_path, ckpt_path, mt, train_bottom=False):
     # Train on top-20 classes (train subsplit)
     logger.info("Training on top-20 classes")
     ckpt_path_top20 = os.path.join(ckpt_path, 'best_val_top20.ckpt')
     processor, trainer_top20, _ = setup_top20(ckpt_path=ckpt_path_top20,
-        data_path=data_path)
-    trainer_top20.train(25)
+        data_path=data_path, mt=mt)
+    trainer_top20.train(20)
 
     acc_df = trainer_top20.get_test_accuracy()
     print("Test accuracy for top-20 classes:")
@@ -21,9 +21,9 @@ def main(data_path, ckpt_path, train_bottom=False):
     # Train on remaining classes (fine-tune subsplit)
     logger.info("Training on fine-tune subsplit")
     ckpt_path_ft = os.path.join(ckpt_path, 'best_val_ft.ckpt')
-    processor, trainer_ft, _ = setup_ft(processor=processor,
+    processor, trainer_ft, _ = setup_ft(processor=processor, mt=mt,
         ckpt_path=ckpt_path_ft, model=trainer_top20.get_best_model())
-    trainer_ft.train(50)
+    trainer_ft.train(20)
 
     acc_df_ft = trainer_ft.get_test_accuracy()
     print("Test accuracy for fine-tune classes:")
@@ -44,9 +44,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--data", help="path to the dataset", required=True)
     parser.add_argument("--ckpt", help="path to checkpoint folder", default='ckpts')
+    parser.add_argument("-m", "--multi", help="run multitask learning model", action="store_true")
     args = parser.parse_args()
 
     if not os.path.exists(args.ckpt):
         os.makedirs(args.ckpt)
 
-    main(args.data, args.ckpt)
+    main(args.data, args.ckpt, args.multi)
