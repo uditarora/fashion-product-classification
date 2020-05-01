@@ -1,5 +1,5 @@
 # fashion-product-classification
-Classification of fashion product images using transfer learning techniques
+Classification of fashion product images using transfer learning techniques.
 
 ## How to run
 Install the requirements in `requirements.txt` and run:
@@ -82,6 +82,7 @@ See [RESULTS.md](RESULTS.md) for results on the basic model, and [MTRESULTS.md](
 ## Ideas:
 - Apply offline data augmentation on the smaller classes.
 - Use progressive resizing while training.
+- Use focal loss while training.
 - Use some field from metadata and build a multitask learning based classifier for both the product category as well as some metadata field.
 - Combine image features and text features using a fusion network.
 - Get more data for the smaller classes - possibly using online images or using GANs
