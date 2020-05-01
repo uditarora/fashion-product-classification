@@ -247,9 +247,11 @@ class Trainer:
         else:
             return avg_acc, class_acc
 
-def get_dataset(processor, phase, subsplit='top20', mt=False):
+
+def get_dataset(processor, phase, subsplit='top20', mt=False, img_size=224):
     """
     Returns the dataset object based on phase, subsplit and multitask labels
+    which uses data transforms based on image size
     """
     if mt:
         mastercat_map = processor.mastercat_map
@@ -257,19 +259,30 @@ def get_dataset(processor, phase, subsplit='top20', mt=False):
     else:
         mastercat_map = None
         subcat_map = None
+    data_transforms = get_data_transforms(phase, img_size)
     if subsplit == 'top20':
         return FashionDataset(processor.data_top20_map[phase],
             processor.img_path, processor.classmap_top20,
-            get_data_transforms(phase),
-            mastercat_map, subcat_map)
+            data_transforms, mastercat_map, subcat_map)
     else:
         return FashionDataset(processor.data_ft_map[phase],
             processor.img_path, processor.classmap_ft,
-            get_data_transforms(phase),
-            mastercat_map, subcat_map)
+            data_transforms, mastercat_map, subcat_map)
+
+def get_dataloader(dataset, phase, batch_size):
+    """
+    Returns the dataloader object for the given dataset object based on phase
+    """
+    if phase == 'train':
+        shuffle = True
+    else:
+        shuffle = False
+    dataloader = DataLoader(dataset, batch_size=batch_size,
+                            shuffle=shuffle, num_workers=4)
+    return dataloader
 
 def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
-                batch_size=64, save_ckpt_flag=True, mt=True):
+                batch_size=64, save_ckpt_flag=True, mt=True, img_size=224):
     """
     Setup training for the top-20 classes (initial train set)
     """
@@ -277,15 +290,15 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
         logger.info("Preprocessing data")
         processor = Preprocessor(data_path)
     logger.info("Creating datasets")
-    datasets_top20 = {x: get_dataset(processor, x, subsplit='top20', mt=mt)
+    datasets_top20 = {x: get_dataset(processor, x, subsplit='top20', mt=mt,
+                                     img_size=img_size)
                      for x in processor.data_top20_map.keys()}
     for name, dataset in datasets_top20.items():
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
     logger.info("Creating dataloaders")
-    dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
-                                       shuffle=True, num_workers=4)
-                        for x in processor.data_top20_map.keys()}
+    dataloaders_top20 = {x: get_dataloader(datasets_top20[x], x, batch_size)
+                         for x in processor.data_top20_map.keys()}
 
     logger.info("Creating model")
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
@@ -321,9 +334,8 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
     logger.info("Creating dataloaders")
-    dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
-                                       shuffle=True, num_workers=4)
-                        for x in processor.data_ft_map.keys()}
+    dataloaders_ft = {x: get_dataloader(datasets_ft[x], x, batch_size)
+                      for x in processor.data_ft_map.keys()}
 
     logger.info("Creating model")
     weights_ft = get_class_weights(processor.data_ft_map['train'],
@@ -344,19 +356,19 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
     
     return processor, trainer, dataloaders_ft
 
-def setup_bottom(processor, trainer, num=50, batch_size=64):
+def setup_progressive(trainer, img_size, reset_optim=True):
     """
-    Setup training for bottom n classes with additional augmentations
+    Updates the provided trainer to use a different image size for retraining
+    based on progressive resizing, and optionally resets and optimizer
     """
-    logger.info("Filtering data for bottom {num} classes".format(num))
-    train_bottom_data = processor.get_bottom_train(num=num)
-    logger.info("Creating dataset and dataloader")
-    dataset = FashionDataset(train_bottom_data, processor.img_path,
-                             processor.classmap_ft,
-                             get_data_transforms('train', small=True))
-    dataloader = DataLoader(dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=4)
+    for phase, dataloader in trainer.data_loaders.items():
+        data_transforms = get_data_transforms(phase, img_size)
+        dataloader.dataset.data_transforms = data_transforms
 
-    trainer.reset()
-    trainer.data_loaders['train'] = dataloader
+    if reset_optim:
+        optimizer = optim.SGD(trainer.model.parameters(), lr=1e-4, momentum=0.9)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.5)
+        trainer.optimizer = optimizer
+        trainer.scheduler = scheduler
+
     return trainer
