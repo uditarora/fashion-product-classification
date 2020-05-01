@@ -11,6 +11,7 @@ from tqdm.notebook import tqdm
 # from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
+from src.datasets.imbalanced_sampler import ImbalancedDatasetSampler
 
 from src.datasets.fashion_dataset import FashionDataset
 from src.datasets.preprocess import Preprocessor
@@ -283,13 +284,19 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
     logger.info("Creating dataloaders")
-    dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
-                                       shuffle=True, num_workers=4)
-                        for x in processor.data_top20_map.keys()}
-
-    logger.info("Creating model")
     weights_top20 = get_class_weights(processor.data_top20_map['train'],
                                       processor.classmap_top20)
+    dataloaders_top20 = {x: DataLoader(datasets_top20[x], batch_size=batch_size,
+                                       shuffle=False, num_workers=4)
+                        for x in ['val', 'test']}
+    dataloaders_top20['train'] = DataLoader(datasets_top20['train'],
+                                            batch_size=batch_size,
+                                            num_workers=4,
+                                            sampler=ImbalancedDatasetSampler(
+                                                datasets_top20['train'],
+                                                weights_top20))
+
+    logger.info("Creating model")
     model = get_top20_classifier(weights_top20, mt=mt)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -321,13 +328,19 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
         logger.info("Created {} dataset with {} samples".format(name, len(dataset)))
 
     logger.info("Creating dataloaders")
-    dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
-                                       shuffle=True, num_workers=4)
-                        for x in processor.data_ft_map.keys()}
-
-    logger.info("Creating model")
     weights_ft = get_class_weights(processor.data_ft_map['train'],
                                       processor.classmap_ft)
+    dataloaders_ft = {x: DataLoader(datasets_ft[x], batch_size=batch_size,
+                                    shuffle=False, num_workers=4)
+                        for x in ['val', 'test']}
+    dataloaders_ft['train'] = DataLoader(datasets_ft['train'],
+                                         batch_size=batch_size,
+                                         num_workers=4,
+                                         sampler=ImbalancedDatasetSampler(
+                                             datasets_ft['train'],
+                                             weights_ft))
+
+    logger.info("Creating model")
     model = get_ft_classifier(model, weights_ft, mt=mt)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
