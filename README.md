@@ -52,6 +52,7 @@ Two auxiliary tasks to classify 'masterCategory' and 'subCategory' are introduce
 - Introducing shuffling in the training data-loaders improved the Top-1 accuracy by **1.13%** and Top-5 accuracy by **0.49%** for the fine-tune subsplit.
 - When losses of the auxiliary tasks were not weighted discriminatively, the test accuracy of the primary task decreased. However after assigning weights of (2, 0.5, 0.5) to the tasks the test accuracy went up significantly!
 - The multitask learning model achieved imroved the Top-1 test accuracy by **3.27%** and Top-5 test accuracy by **0.05%** for the fine-tune subsplit. The test accuracies for the top-20 classes also went up by **0.45%** and **0.02%** respectively.
+- Adding a imblanced class sampler while training led to a dramatic decrease in test accuracy for fine-tune subsplit because of overfitting on the smaller classes.
 
 ## Results
 See [RESULTS.md](RESULTS.md) for results on the basic model, and [MTRESULTS.md](MTRESULTS.md) for results on the multitask learning model.

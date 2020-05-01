@@ -296,8 +296,8 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.3 every 5 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
+    # Decay LR by a factor of 0.25 every 4 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.25)
 
     logger.info("Creating trainer")
     trainer = Trainer(model, optimizer, dataloaders_top20,
@@ -334,8 +334,8 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.3 every 5 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
+    # Decay LR by a factor of 0.25 every 4 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.25)
 
     logger.info("Creating trainer")
     trainer = Trainer(model, optimizer, dataloaders_ft,
