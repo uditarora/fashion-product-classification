@@ -88,3 +88,9 @@ class FashionDataset(Dataset):
         Returns a dictionary mapping class numbers to names
         """
         return {v: k for k, v in self.class_map.items()}
+
+    def get_label(self, index):
+        """
+        Returns the label corresponding to the primary task
+        """
+        return self.class_map[self.label_arr[index]]

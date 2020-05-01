@@ -294,7 +294,7 @@ def setup_top20(processor=None, ckpt_path=None, data_path=PATH,
                                             num_workers=4,
                                             sampler=ImbalancedDatasetSampler(
                                                 datasets_top20['train'],
-                                                weights_top20))
+                                                callback_get_label=datasets_top20['train'].get_label))
 
     logger.info("Creating model")
     model = get_top20_classifier(weights_top20, mt=mt)
@@ -338,7 +338,7 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
                                          num_workers=4,
                                          sampler=ImbalancedDatasetSampler(
                                              datasets_ft['train'],
-                                             weights_ft))
+                                             callback_get_label=datasets_ft['train'].get_label))
 
     logger.info("Creating model")
     model = get_ft_classifier(model, weights_ft, mt=mt)
@@ -347,8 +347,8 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # Decay LR by a factor of 0.3 every 5 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
+    # Decay LR by a factor of 0.3 every 4 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.3)
 
     logger.info("Creating trainer")
     trainer = Trainer(model, optimizer, dataloaders_ft,
