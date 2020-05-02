@@ -1,5 +1,183 @@
 # Results
 
+## Full Dataset
+
+### Top-20 classes
+
+#### Training plot
+<img src="images/mt_top20.png" alt="mt_top20" width="350"/>
+
+#### Test results
+Average Top-1 accuracy: **88.35%**, Top-5 accuracy: **95.74%**.
+
+<details>
+  <summary>Click to view classwise accuracies</summary>
+
+|                       | Top\-1  | Top\-5  |
+|-----------------------|---------|---------|
+| Average \(Micro\)     | 88\.35  | 95\.74  |
+| Backpacks             | 98\.32  | 100\.00 |
+| Belts                 | 99\.07  | 99\.07  |
+| Briefs                | 96\.26  | 100\.00 |
+| Casual Shoes          | 84\.09  | 99\.69  |
+| Flip Flops            | 86\.03  | 98\.77  |
+| Formal Shoes          | 92\.09  | 98\.56  |
+| Handbags              | 96\.81  | 100\.00 |
+| Heels                 | 91\.06  | 99\.82  |
+| Jeans                 | 99\.26  | 100\.00 |
+| Kurtas                | 95\.17  | 99\.86  |
+| Perfume and Body Mist | 0\.00   | 0\.00   |
+| Sandals               | 85\.00  | 99\.52  |
+| Shirts                | 99\.23  | 100\.00 |
+| Socks                 | 97\.24  | 98\.90  |
+| Sports Shoes          | 85\.37  | 99\.39  |
+| Sunglasses            | 100\.00 | 100\.00 |
+| Tops                  | 67\.00  | 100\.00 |
+| Tshirts               | 94\.35  | 99\.93  |
+| Wallets               | 97\.02  | 100\.00 |
+| Watches               | 100\.00 | 100\.00 |
+
+</details>
+
+### Fine-tune sub-split
+
+#### Training plot
+<img src="images/mt_ft.png" alt="mt_ft" width="350"/>
+
+#### Test results
+Average Top-1 accuracy: **48.97%**, Top-5 accuracy: **63.94%**.
+
+<details>
+  <summary>Click to view classwise accuracies</summary>
+
+|                           | Top\-1  | Top\-5  |
+|---------------------------|---------|---------|
+| Average \(Micro\)         | 48\.97  | 63\.94  |
+| Accessory Gift Set        | 100\.00 | 100\.00 |
+| Baby Dolls                | 0\.00   | 0\.00   |
+| Bangle                    | 4\.35   | 78\.26  |
+| Basketballs               | 90\.91  | 100\.00 |
+| Bath Robe                 | 0\.00   | 0\.00   |
+| Beauty Accessory          | 0\.00   | 0\.00   |
+| Blazers                   | 0\.00   | 0\.00   |
+| Body Lotion               | 0\.00   | 0\.00   |
+| Body Wash and Scrub       | 0\.00   | 0\.00   |
+| Booties                   | 0\.00   | 0\.00   |
+| Boxers                    | 0\.00   | 0\.00   |
+| Bra                       | 98\.78  | 99\.70  |
+| Bracelet                  | 85\.71  | 100\.00 |
+| Camisoles                 | 47\.06  | 85\.29  |
+| Capris                    | 59\.62  | 100\.00 |
+| Caps                      | 94\.66  | 98\.47  |
+| Churidar                  | 0\.00   | 75\.00  |
+| Clothing Set              | 0\.00   | 0\.00   |
+| Clutches                  | 95\.83  | 100\.00 |
+| Compact                   | 0\.00   | 0\.00   |
+| Concealer                 | 0\.00   | 0\.00   |
+| Cufflinks                 | 96\.67  | 100\.00 |
+| Cushion Covers            | 0\.00   | 0\.00   |
+| Deodorant                 | 0\.00   | 0\.00   |
+| Dresses                   | 69\.89  | 98\.92  |
+| Duffel Bag                | 86\.96  | 100\.00 |
+| Dupatta                   | 37\.50  | 100\.00 |
+| Earrings                  | 100\.00 | 100\.00 |
+| Eye Cream                 | 0\.00   | 0\.00   |
+| Eyeshadow                 | 0\.00   | 0\.00   |
+| Face Moisturisers         | 0\.00   | 0\.00   |
+| Face Scrub and Exfoliator | 0\.00   | 0\.00   |
+| Face Serum and Gel        | 0\.00   | 0\.00   |
+| Face Wash and Cleanser    | 0\.00   | 0\.00   |
+| Flats                     | 91\.14  | 100\.00 |
+| Footballs                 | 100\.00 | 100\.00 |
+| Foundation and Primer     | 0\.00   | 0\.00   |
+| Fragrance Gift Set        | 0\.00   | 0\.00   |
+| Free Gifts                | 8\.33   | 50\.00  |
+| Gloves                    | 100\.00 | 100\.00 |
+| Hair Accessory            | 0\.00   | 0\.00   |
+| Hair Colour               | 0\.00   | 0\.00   |
+| Hat                       | 0\.00   | 0\.00   |
+| Headband                  | 100\.00 | 100\.00 |
+| Highlighter and Blush     | 0\.00   | 0\.00   |
+| Innerwear Vests           | 100\.00 | 100\.00 |
+| Ipad                      | 0\.00   | 0\.00   |
+| Jackets                   | 61\.70  | 97\.87  |
+| Jeggings                  | 0\.00   | 0\.00   |
+| Jewellery Set             | 38\.46  | 100\.00 |
+| Jumpsuit                  | 0\.00   | 100\.00 |
+| Kajal and Eyeliner        | 0\.00   | 0\.00   |
+| Key chain                 | 0\.00   | 0\.00   |
+| Kurta Sets                | 100\.00 | 100\.00 |
+| Kurtis                    | 78\.41  | 100\.00 |
+| Laptop Bag                | 62\.86  | 100\.00 |
+| Leggings                  | 52\.08  | 91\.67  |
+| Lehenga Choli             | 0\.00   | 0\.00   |
+| Lip Care                  | 0\.00   | 0\.00   |
+| Lip Gloss                 | 0\.00   | 0\.00   |
+| Lip Liner                 | 0\.00   | 0\.00   |
+| Lip Plumper               | 0\.00   | 0\.00   |
+| Lipstick                  | 0\.00   | 0\.00   |
+| Lounge Pants              | 47\.37  | 78\.95  |
+| Lounge Shorts             | 0\.00   | 77\.78  |
+| Lounge Tshirts            | 0\.00   | 0\.00   |
+| Makeup Remover            | 0\.00   | 100\.00 |
+| Mascara                   | 0\.00   | 0\.00   |
+| Mask and Peel             | 0\.00   | 0\.00   |
+| Mens Grooming Kit         | 0\.00   | 0\.00   |
+| Messenger Bag             | 66\.67  | 100\.00 |
+| Mobile Pouch              | 33\.33  | 100\.00 |
+| Mufflers                  | 34\.48  | 100\.00 |
+| Nail Essentials           | 0\.00   | 0\.00   |
+| Nail Polish               | 0\.00   | 0\.00   |
+| Necklace and Chains       | 95\.00  | 100\.00 |
+| Nehru Jackets             | 0\.00   | 0\.00   |
+| Night suits               | 51\.43  | 91\.43  |
+| Nightdress                | 26\.88  | 73\.12  |
+| Patiala                   | 0\.00   | 0\.00   |
+| Pendant                   | 64\.20  | 98\.77  |
+| Rain Jacket               | 100\.00 | 100\.00 |
+| Rain Trousers             | 100\.00 | 100\.00 |
+| Ring                      | 79\.31  | 100\.00 |
+| Robe                      | 33\.33  | 33\.33  |
+| Rompers                   | 0\.00   | 0\.00   |
+| Rucksacks                 | 100\.00 | 100\.00 |
+| Salwar                    | 0\.00   | 0\.00   |
+| Salwar and Dupatta        | 0\.00   | 0\.00   |
+| Sarees                    | 0\.00   | 0\.00   |
+| Scarves                   | 45\.65  | 91\.30  |
+| Shapewear                 | 100\.00 | 100\.00 |
+| Shoe Accessories          | 5\.26   | 31\.58  |
+| Shoe Laces                | 0\.00   | 0\.00   |
+| Shorts                    | 73\.46  | 98\.10  |
+| Shrug                     | 0\.00   | 0\.00   |
+| Skirts                    | 67\.92  | 77\.36  |
+| Sports Sandals            | 86\.67  | 100\.00 |
+| Stockings                 | 29\.41  | 82\.35  |
+| Stoles                    | 20\.00  | 90\.00  |
+| Sunscreen                 | 0\.00   | 0\.00   |
+| Suspenders                | 0\.00   | 0\.00   |
+| Sweaters                  | 62\.75  | 97\.25  |
+| Sweatshirts               | 73\.54  | 96\.11  |
+| Swimwear                  | 37\.50  | 87\.50  |
+| Tablet Sleeve             | 0\.00   | 0\.00   |
+| Ties                      | 98\.80  | 98\.80  |
+| Ties and Cufflinks        | 0\.00   | 0\.00   |
+| Tights                    | 0\.00   | 100\.00 |
+| Toner                     | 0\.00   | 0\.00   |
+| Track Pants               | 72\.25  | 98\.27  |
+| Tracksuits                | 100\.00 | 100\.00 |
+| Travel Accessory          | 60\.00  | 100\.00 |
+| Trolley Bag               | 0\.00   | 0\.00   |
+| Trousers                  | 87\.74  | 98\.85  |
+| Trunk                     | 0\.00   | 0\.00   |
+| Tunics                    | 44\.44  | 100\.00 |
+| Umbrellas                 | 100\.00 | 100\.00 |
+| Waist Pouch               | 0\.00   | 61\.54  |
+| Waistcoat                 | 33\.33  | 100\.00 |
+| Water Bottle              | 100\.00 | 100\.00 |
+| Wristbands                | 100\.00 | 100\.00 |
+
+</details>
+
 ## Small Dataset
 
 ### Top-20 classes

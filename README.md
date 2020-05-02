@@ -23,6 +23,8 @@ Update path in `src/tests/util.py` and run `python -m unittest discover` from th
 - `main.py` contains code to setup experiments, run training and evaluate performance.
 ### Experiments
 - `fashion_classification_small.ipynb` contains code used to obtain the latest results on small dataset.
+- `fashion_classification_full.ipynb` contains code used to obtain the latest results on full dataset.
+- `mt_fashion_classification_full.ipynb` contains code used to obtain the latest results on full dataset with multitask learning model.
 - `visualize.ipynb` contains code to visualize the results of the model.
 - `experiments/metadata_experiments.ipynb` contains code used to evaluate metadata.
 - `experiments/preprocess_small.ipynb` contains code for preprocessing the small version dataset.
@@ -53,12 +55,13 @@ Two auxiliary tasks to classify 'masterCategory' and 'subCategory' are introduce
 - When losses of the auxiliary tasks were not weighted discriminatively, the test accuracy of the primary task decreased. However after assigning weights of (2, 0.5, 0.5) to the tasks the test accuracy went up significantly!
 - The multitask learning model achieved imroved the Top-1 test accuracy by **3.27%** and Top-5 test accuracy by **0.05%** for the fine-tune subsplit. The test accuracies for the top-20 classes also went up by **0.45%** and **0.02%** respectively.
 - Adding a imblanced class sampler while training led to a dramatic decrease in test accuracy for fine-tune subsplit because of overfitting on the smaller classes.
+- Training on the full dataset (with higher-resolution images) gave the following average test accuracies for top-20 classes - Top-1: **88.05%**, Top-5: **95.78%**. It gave the following average test accuracies for fine-tune subsplit - Top-1: **47.1%**, Top-5: **63.85%**. This is much higher than the accuracy obtained on the smaller dataset.
+- The multitask learning model further improved the average test accuracies for top-20 classes to - Top-1: **88.35%**, Top-5: **95.74%**. For the fine-tune subsplit, they increased to - Top-1: **48.97%**, Top-5: **63.94%**.
 
 ## Results
 See [RESULTS.md](RESULTS.md) for results on the basic model, and [MTRESULTS.md](MTRESULTS.md) for results on the multitask learning model.
 
 ## Updates
-### Small dataset
 - There are 5 images in the small dataset which are referred to in the metadata but don't exist in the dataset.
 - One class from the top-20 is missing in the train-split, and many classes from the remaining classes are absent in either the test of the train splits. Conversion of class names to numerical labels needs to be done carefully.
 - One of the images (`25480.jpg`) is loaded as grayscale by default. Had to convert that to RGB in the dataset loader.
@@ -71,12 +74,14 @@ See [RESULTS.md](RESULTS.md) for results on the basic model, and [MTRESULTS.md](
 - Tried re-training the fine-tune model on the bottom 50 classes with fewer samples by applying more data augmentations. It improved the test accuracy of some classes but led to a decrease in the average test accuracy, possibly due to overfitting on the smaller classes.
 - Improved accuracy by shuffling data during training.
 - Implemented multitask learning based model.
+- Obtained results for base and multitask learning model for full dataset.
+- Implmenented progressive resizing but couldn't train the model due to GPU memory constraints.
 
 ## TODO:
 - ~~Evaluate model on test data.~~
 - ~~Train on second part of data.~~
 - ~~Restructure code into python files.~~
-- Train on the bigger version of dataset.
+- ~~Train on the bigger version of dataset.~~
 - ~~Play with augmentation, hyperparameters, and potentially model architecture to improve performance.~~
 - ~~Improve accuracy of smaller classes.~~
 
