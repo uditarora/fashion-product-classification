@@ -1,22 +1,24 @@
 import unittest
 import pandas as pd
+import logging
 from src.datasets.preprocess import Preprocessor
 from .util import *
+
+logging.basicConfig(level=logging.WARN)
 
 class TestPreprocessor(unittest.TestCase):
     """
     Tests the dataset preprocessor
     """
-    def setUp(self):
-        self.preprocessor = Preprocessor(base_path=PATH)
-        self.preprocessor.preprocess()
-    
+    @classmethod
+    def setUpClass(cls):
+        cls.preprocessor = Preprocessor(base_path=PATH)
+
     def test_verify_csv(self):
         """
         Check if the csv file has been cleaned
         """
         try:
-            self.preprocessor.clean_csv()
             styles = pd.read_csv(self.preprocessor.csv_path)
         except:
             styles = None
