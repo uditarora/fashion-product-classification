@@ -175,7 +175,7 @@ class Trainer:
 
                 current_loss += loss.item() * inputs.size(0)
                 if not self.mt:
-                    current_corrects += torch.sum(preds == labels.data)
+                    current_corrects[0] += torch.sum(preds == labels.data)
                 else:
                     for i in range(self.num_tasks):
                         current_corrects[i] += torch.sum(preds[i] == labels[i].data)
@@ -356,14 +356,17 @@ def setup_ft(processor=None, ckpt_path=None, data_path=PATH, batch_size=64,
     
     return processor, trainer, dataloaders_ft
 
-def setup_progressive(trainer, img_size, reset_optim=True):
+def setup_progressive(trainer, img_size, reset_optim=True, batch_size=32):
     """
     Updates the provided trainer to use a different image size for retraining
     based on progressive resizing, and optionally resets and optimizer
     """
     for phase, dataloader in trainer.data_loaders.items():
         data_transforms = get_data_transforms(phase, img_size)
-        dataloader.dataset.data_transforms = data_transforms
+        dataset = dataloader.dataset
+        dataset.data_transforms = data_transforms
+        dataloader = get_dataloader(dataset, phase, batch_size)
+        trainer.data_loaders[phase] = dataloader
 
     if reset_optim:
         optimizer = optim.SGD(trainer.model.parameters(), lr=1e-4, momentum=0.9)
